@@ -182,9 +182,12 @@ func TestTransfer_SameAccount(t *testing.T) {
 	ledgerService := ledger.NewService(db, nil)
 	paymentService := NewService(ledgerService)
 
-	acc1, _ := ledgerService.CreateAccount("User Same", ledger.Liability, "USD", "CASH", "INDIVIDUAL", nil)
+	acc1, err := ledgerService.CreateAccount("User Same", ledger.Liability, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create acc1: %v", err)
+	}
 
-	_, err := paymentService.Transfer(acc1.ID, acc1.ID, 100, "USD")
+	_, err = paymentService.Transfer(acc1.ID, acc1.ID, 100, "USD")
 	if err == nil {
 		t.Error("Expected error when transferring to same account")
 	}
