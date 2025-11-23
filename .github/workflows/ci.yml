@@ -66,7 +66,14 @@ jobs:
     - name: Initialize Database
       env:
         PGPASSWORD: password
-      run: psql -h localhost -p 5432 -U user -d ledger -f db/schema.sql
+      run: |
+        psql -h localhost -p 5432 -U user -d ledger -f db/schema.sql
+        psql -h localhost -p 5432 -U user -d ledger -f update_clients_accounts_schema.sql
+        psql -h localhost -p 5432 -U user -d ledger -f update_config_lifecycle_schema.sql
+        psql -h localhost -p 5432 -U user -d ledger -f update_product_schema.sql
+        psql -h localhost -p 5432 -U user -d ledger -f update_reference_audit_schema.sql
+        psql -h localhost -p 5432 -U user -d ledger -f update_schema.sql
+        psql -h localhost -p 5432 -U user -d ledger -f update_securities_schema.sql
 
     - name: Build
       run: go build -v ./...
