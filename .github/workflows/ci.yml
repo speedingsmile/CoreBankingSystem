@@ -44,7 +44,7 @@ jobs:
         ports:
           - 9092:9092
         options: >-
-          --health-cmd "nc -z localhost 9092 || exit 1"
+          --health-cmd "cub kafka-ready -b localhost:9092 1 20"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 10
@@ -78,4 +78,5 @@ jobs:
         DB_USER: user
         DB_PASSWORD: password
         DB_NAME: ledger
+        KAFKA_BROKER: localhost:9092
       run: go test -v ./...
