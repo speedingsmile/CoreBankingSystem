@@ -88,8 +88,14 @@ func TestPostTransaction_Balanced(t *testing.T) {
 
 	// Setup accounts
 	// Setup accounts
-	acc1, _ := service.CreateAccount("Acc 1", Asset, "USD", "CASH", "INDIVIDUAL", nil)
-	acc2, _ := service.CreateAccount("Acc 2", Equity, "USD", "CASH", "INDIVIDUAL", nil)
+	acc1, err := service.CreateAccount("Acc 1", Asset, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create acc1: %v", err)
+	}
+	acc2, err := service.CreateAccount("Acc 2", Equity, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create acc2: %v", err)
+	}
 
 	// Post Transaction
 	entries := []Entry{
@@ -139,8 +145,14 @@ func TestPostTransaction_Unbalanced(t *testing.T) {
 
 	service := NewService(db, nil)
 
-	acc1, _ := service.CreateAccount("Acc 1", Asset, "USD", "CASH", "INDIVIDUAL", nil)
-	acc2, _ := service.CreateAccount("Acc 2", Equity, "USD", "CASH", "INDIVIDUAL", nil)
+	acc1, err := service.CreateAccount("Acc 1", Asset, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create acc1: %v", err)
+	}
+	acc2, err := service.CreateAccount("Acc 2", Equity, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create acc2: %v", err)
+	}
 
 	entries := []Entry{
 		{AccountID: acc1.ID, Direction: Debit, Amount: 100},

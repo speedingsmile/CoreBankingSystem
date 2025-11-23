@@ -134,11 +134,20 @@ func TestTransfer(t *testing.T) {
 	paymentService := NewService(ledgerService)
 
 	// Create two accounts
-	acc1, _ := ledgerService.CreateAccount("User 1", ledger.Liability, "USD", "CASH", "INDIVIDUAL", nil)
-	acc2, _ := ledgerService.CreateAccount("User 2", ledger.Liability, "USD", "CASH", "INDIVIDUAL", nil)
+	acc1, err := ledgerService.CreateAccount("User 1", ledger.Liability, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create acc1: %v", err)
+	}
+	acc2, err := ledgerService.CreateAccount("User 2", ledger.Liability, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create acc2: %v", err)
+	}
 
 	// Deposit to Acc1
-	paymentService.Deposit(acc1.ID, 1000, "USD")
+	_, err = paymentService.Deposit(acc1.ID, 1000, "USD")
+	if err != nil {
+		t.Fatalf("Failed to deposit: %v", err)
+	}
 
 	// Transfer
 	amount := int64(300)
