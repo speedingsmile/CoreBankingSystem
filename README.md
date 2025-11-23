@@ -39,7 +39,9 @@ The easiest way to run the system is using Docker Compose.
    ```
 
 2. **Start Backend Services**
-   This will start the Go Ledger Service, PostgreSQL, Kafka, and Zookeeper.
+   This will start the Go Ledger Service, PostgreSQL, Kafka, Zookeeper, and Kafka UI.
+   - **Backend API**: `http://localhost:8080`
+   - **Kafka UI**: `http://localhost:8088`
    ```bash
    docker-compose up --build
    ```

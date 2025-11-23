@@ -114,7 +114,43 @@ func main() {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		}
 	})))
-	http.Handle("/products", auth.Middleware(http.HandlerFunc(handler.CreateProduct)))
+	http.Handle("/products", auth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			handler.ListProducts(w, r)
+		} else if r.Method == http.MethodPost {
+			handler.CreateProduct(w, r)
+		} else if r.Method == http.MethodPut {
+			handler.UpdateProduct(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})))
+	http.Handle("/products/clone", auth.Middleware(http.HandlerFunc(handler.CloneProduct)))
+	http.Handle("/fees", auth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			handler.ListFees(w, r)
+		} else if r.Method == http.MethodPost {
+			handler.CreateFee(w, r)
+		} else if r.Method == http.MethodPut {
+			handler.UpdateFee(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})))
+	http.Handle("/fees/clone", auth.Middleware(http.HandlerFunc(handler.CloneFee)))
+
+	http.Handle("/rules", auth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			handler.ListRules(w, r)
+		} else if r.Method == http.MethodPost {
+			handler.CreateRule(w, r)
+		} else if r.Method == http.MethodPut {
+			handler.UpdateRule(w, r)
+		} else {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+	})))
+	http.Handle("/rules/clone", auth.Middleware(http.HandlerFunc(handler.CloneRule)))
 	http.Handle("/accounts/product", auth.Middleware(http.HandlerFunc(handler.AssignProduct)))
 	http.Handle("/interest/calculate", auth.Middleware(http.HandlerFunc(handler.CalculateInterest)))
 

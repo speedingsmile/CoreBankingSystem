@@ -217,18 +217,201 @@ func (s *Service) CreateProduct(name string, interestRateBPS int64) (*Product, e
 	product := &Product{
 		Name:            name,
 		InterestRateBPS: interestRateBPS,
+		Status:          ProductStatusDraft,
+		Version:         1,
 	}
 
 	query := `
-		INSERT INTO products (name, interest_rate_bps)
-		VALUES ($1, $2)
+		INSERT INTO products (name, interest_rate_bps, status, version)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at
 	`
-	err := s.db.QueryRow(query, product.Name, product.InterestRateBPS).Scan(&product.ID, &product.CreatedAt)
+	err := s.db.QueryRow(query, product.Name, product.InterestRateBPS, product.Status, product.Version).Scan(&product.ID, &product.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create product: %w", err)
 	}
 	return product, nil
+}
+
+func (s *Service) UpdateProduct(id uuid.UUID, name string, interestRateBPS int64, status ProductStatus) (*Product, error) {
+	// 1. Fetch current product state
+	currentProduct := &Product{}
+	err := s.db.QueryRow("SELECT id, name, interest_rate_bps, status, version FROM products WHERE id = $1", id).
+		Scan(&currentProduct.ID, &currentProduct.Name, &currentProduct.InterestRateBPS, &currentProduct.Status, &currentProduct.Version)
+	if err != nil {
+		return nil, fmt.Errorf("product not found: %w", err)
+	}
+
+	// 2. Check Usage Count
+	var usageCount int
+	err = s.db.QueryRow("SELECT COUNT(*) FROM accounts WHERE product_id = $1", id).Scan(&usageCount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to check product usage: %w", err)
+	}
+
+	// 3. Apply Rules
+	if currentProduct.Status == ProductStatusActive && usageCount > 0 {
+		// Scenario B: In Use - Block critical changes
+		if interestRateBPS != currentProduct.InterestRateBPS {
+			return nil, fmt.Errorf("cannot change interest rate of an active product in use. Create a new version instead")
+		}
+		// Allow name change or status change (e.g. to Archived)
+	}
+
+	// 4. Update
+	query := `
+		UPDATE products
+		SET name = $1, interest_rate_bps = $2, status = $3, version = version + 1
+		WHERE id = $4
+		RETURNING version
+	`
+	err = s.db.QueryRow(query, name, interestRateBPS, status, id).Scan(&currentProduct.Version)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update product: %w", err)
+	}
+
+	currentProduct.Name = name
+	currentProduct.InterestRateBPS = interestRateBPS
+	currentProduct.Status = status
+
+	return currentProduct, nil
+}
+
+func (s *Service) CloneProduct(id uuid.UUID) (*Product, error) {
+	// 1. Fetch original
+	original := &Product{}
+	err := s.db.QueryRow("SELECT name, interest_rate_bps FROM products WHERE id = $1", id).
+		Scan(&original.Name, &original.InterestRateBPS)
+	if err != nil {
+		return nil, fmt.Errorf("original product not found: %w", err)
+	}
+
+	// 2. Create new version (Draft)
+	newVersionName := fmt.Sprintf("%s (v2)", original.Name) // Simplified naming logic
+	return s.CreateProduct(newVersionName, original.InterestRateBPS)
+}
+
+func (s *Service) ListProducts() ([]*Product, error) {
+	query := `
+		SELECT id, name, interest_rate_bps, status, version, parent_product_id, created_at
+		FROM products
+		ORDER BY name, version DESC
+	`
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list products: %w", err)
+	}
+	defer rows.Close()
+
+	var products []*Product
+	for rows.Next() {
+		var p Product
+		if err := rows.Scan(&p.ID, &p.Name, &p.InterestRateBPS, &p.Status, &p.Version, &p.ParentProductID, &p.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan product: %w", err)
+		}
+		products = append(products, &p)
+	}
+	return products, nil
+}
+
+// --- Fee Management ---
+
+func (s *Service) CreateFee(name, method string, value float64, frequency string, glAccountID uuid.UUID) (*Fee, error) {
+	fee := &Fee{
+		Name:        name,
+		Method:      method,
+		Value:       value,
+		Frequency:   frequency,
+		GLAccountID: glAccountID,
+		Status:      ConfigStatusDraft,
+		Version:     1,
+	}
+
+	query := `
+		INSERT INTO fees (name, method, value, frequency, gl_account_id, status, version)
+		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		RETURNING id, created_at
+	`
+	err := s.db.QueryRow(query, fee.Name, fee.Method, fee.Value, fee.Frequency, fee.GLAccountID, fee.Status, fee.Version).
+		Scan(&fee.ID, &fee.CreatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create fee: %w", err)
+	}
+	return fee, nil
+}
+
+func (s *Service) UpdateFee(id uuid.UUID, name string, value float64, status ConfigStatus) (*Fee, error) {
+	// 1. Fetch current state
+	current := &Fee{}
+	err := s.db.QueryRow("SELECT id, name, value, status, version FROM fees WHERE id = $1", id).
+		Scan(&current.ID, &current.Name, &current.Value, &current.Status, &current.Version)
+	if err != nil {
+		return nil, fmt.Errorf("fee not found: %w", err)
+	}
+
+	// 2. Check Usage (Mocked for now, assuming usage check logic similar to products)
+	// In real world, check if fee is attached to any active products or transactions
+	usageCount := 0 // Placeholder
+
+	// 3. Apply Rules
+	if current.Status == ConfigStatusActive && usageCount > 0 {
+		if value != current.Value {
+			return nil, fmt.Errorf("cannot change value of an active fee in use. Create a new version instead")
+		}
+	}
+
+	// 4. Update
+	query := `
+		UPDATE fees
+		SET name = $1, value = $2, status = $3, version = version + 1
+		WHERE id = $4
+		RETURNING version
+	`
+	err = s.db.QueryRow(query, name, value, status, id).Scan(&current.Version)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update fee: %w", err)
+	}
+
+	current.Name = name
+	current.Value = value
+	current.Status = status
+
+	return current, nil
+}
+
+func (s *Service) CloneFee(id uuid.UUID) (*Fee, error) {
+	original := &Fee{}
+	err := s.db.QueryRow("SELECT name, method, value, frequency, gl_account_id FROM fees WHERE id = $1", id).
+		Scan(&original.Name, &original.Method, &original.Value, &original.Frequency, &original.GLAccountID)
+	if err != nil {
+		return nil, fmt.Errorf("original fee not found: %w", err)
+	}
+
+	newVersionName := fmt.Sprintf("%s (v2)", original.Name)
+	return s.CreateFee(newVersionName, original.Method, original.Value, original.Frequency, original.GLAccountID)
+}
+
+func (s *Service) ListFees() ([]*Fee, error) {
+	query := `
+		SELECT id, name, method, value, frequency, gl_account_id, status, version, created_at
+		FROM fees
+		ORDER BY name, version DESC
+	`
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list fees: %w", err)
+	}
+	defer rows.Close()
+
+	var fees []*Fee
+	for rows.Next() {
+		var f Fee
+		if err := rows.Scan(&f.ID, &f.Name, &f.Method, &f.Value, &f.Frequency, &f.GLAccountID, &f.Status, &f.Version, &f.CreatedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan fee: %w", err)
+		}
+		fees = append(fees, &f)
+	}
+	return fees, nil
 }
 
 func (s *Service) AssignProduct(accountID uuid.UUID, productID uuid.UUID) error {

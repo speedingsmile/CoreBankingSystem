@@ -46,27 +46,47 @@ const SecurityConfig: React.FC = () => {
     const [newLimit, setNewLimit] = useState({ roleId: '', type: 'Withdrawal', amount: 0, currency: 'USD' });
     const [newUser, setNewUser] = useState({ username: '', empId: '', branch: '', roleId: '', status: 'Active' });
 
+    // Edit States
+    const [editingRole, setEditingRole] = useState<any>(null);
+    const [editingLimit, setEditingLimit] = useState<any>(null);
+    const [editingUser, setEditingUser] = useState<any>(null);
+
     // Handlers
-    const handleAddRole = (e: React.FormEvent) => {
+    const handleSaveRole = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `R00${roles.length + 1}`;
-        setRoles([...roles, { id: newId, ...newRole }]);
+        if (editingRole) {
+            setRoles(roles.map(r => r.id === editingRole.id ? { ...r, ...newRole } : r));
+            setEditingRole(null);
+        } else {
+            const newId = `R00${roles.length + 1}`;
+            setRoles([...roles, { id: newId, ...newRole }]);
+        }
         setShowRoleModal(false);
         setNewRole({ name: '', description: '' });
     };
 
-    const handleAddLimit = (e: React.FormEvent) => {
+    const handleSaveLimit = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `L00${limits.length + 1}`;
-        setLimits([...limits, { id: newId, ...newLimit }]);
+        if (editingLimit) {
+            setLimits(limits.map(l => l.id === editingLimit.id ? { ...l, ...newLimit } : l));
+            setEditingLimit(null);
+        } else {
+            const newId = `L00${limits.length + 1}`;
+            setLimits([...limits, { id: newId, ...newLimit }]);
+        }
         setShowLimitModal(false);
         setNewLimit({ roleId: '', type: 'Withdrawal', amount: 0, currency: 'USD' });
     };
 
-    const handleAddUser = (e: React.FormEvent) => {
+    const handleSaveUser = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `U00${users.length + 1}`;
-        setUsers([...users, { id: newId, ...newUser }]);
+        if (editingUser) {
+            setUsers(users.map(u => u.id === editingUser.id ? { ...u, ...newUser } : u));
+            setEditingUser(null);
+        } else {
+            const newId = `U00${users.length + 1}`;
+            setUsers([...users, { id: newId, ...newUser }]);
+        }
         setShowUserModal(false);
         setNewUser({ username: '', empId: '', branch: '', roleId: '', status: 'Active' });
     };
@@ -145,7 +165,11 @@ const SecurityConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Role Definitions</h3>
                                             <button
-                                                onClick={() => setShowRoleModal(true)}
+                                                onClick={() => {
+                                                    setEditingRole(null);
+                                                    setNewRole({ name: '', description: '' });
+                                                    setShowRoleModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Create Role
@@ -165,13 +189,23 @@ const SecurityConfig: React.FC = () => {
                                                         <tr key={role.id}>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{role.name}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{role.description}</td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 space-x-2">
                                                                 <button
                                                                     onClick={() => openPermModal(role.id)}
                                                                     className="text-indigo-600 hover:text-indigo-900"
                                                                 >
-                                                                    Manage Permissions
+                                                                    Permissions
                                                                 </button>
+                                                                <button onClick={() => {
+                                                                    setEditingRole(role);
+                                                                    setNewRole({ name: role.name, description: role.description });
+                                                                    setShowRoleModal(true);
+                                                                }} className="text-blue-600 hover:text-blue-900">Edit</button>
+                                                                <button onClick={() => {
+                                                                    if (window.confirm("Delete this role?")) {
+                                                                        setRoles(roles.filter(item => item.id !== role.id));
+                                                                    }
+                                                                }} className="text-red-600 hover:text-red-900">Delete</button>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -186,7 +220,11 @@ const SecurityConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Transaction Approval Limits</h3>
                                             <button
-                                                onClick={() => setShowLimitModal(true)}
+                                                onClick={() => {
+                                                    setEditingLimit(null);
+                                                    setNewLimit({ roleId: '', type: 'Withdrawal', amount: 0, currency: 'USD' });
+                                                    setShowLimitModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Set New Limit
@@ -200,6 +238,7 @@ const SecurityConfig: React.FC = () => {
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction Type</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Limit Amount</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -211,6 +250,18 @@ const SecurityConfig: React.FC = () => {
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{limit.type}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{limit.amount.toLocaleString()}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{limit.currency}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                <button onClick={() => {
+                                                                    setEditingLimit(limit);
+                                                                    setNewLimit({ roleId: limit.roleId, type: limit.type, amount: limit.amount, currency: limit.currency });
+                                                                    setShowLimitModal(true);
+                                                                }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                <button onClick={() => {
+                                                                    if (window.confirm("Delete this limit?")) {
+                                                                        setLimits(limits.filter(item => item.id !== limit.id));
+                                                                    }
+                                                                }} className="text-red-600 hover:text-red-900">Delete</button>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -224,7 +275,11 @@ const SecurityConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Staff Onboarding</h3>
                                             <button
-                                                onClick={() => setShowUserModal(true)}
+                                                onClick={() => {
+                                                    setEditingUser(null);
+                                                    setNewUser({ username: '', empId: '', branch: '', roleId: '', status: 'Active' });
+                                                    setShowUserModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Add User
@@ -239,6 +294,7 @@ const SecurityConfig: React.FC = () => {
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -254,6 +310,18 @@ const SecurityConfig: React.FC = () => {
                                                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                                                     {user.status}
                                                                 </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                <button onClick={() => {
+                                                                    setEditingUser(user);
+                                                                    setNewUser({ username: user.username, empId: user.empId, branch: user.branch, roleId: user.roleId, status: user.status });
+                                                                    setShowUserModal(true);
+                                                                }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                <button onClick={() => {
+                                                                    if (window.confirm("Delete this user?")) {
+                                                                        setUsers(users.filter(item => item.id !== user.id));
+                                                                    }
+                                                                }} className="text-red-600 hover:text-red-900">Delete</button>
                                                             </td>
                                                         </tr>
                                                     ))}
@@ -274,9 +342,9 @@ const SecurityConfig: React.FC = () => {
                             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
                             <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                                <form onSubmit={handleAddRole}>
+                                <form onSubmit={handleSaveRole}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Create New Role</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingRole ? 'Edit Role' : 'Create New Role'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Role Name</label>
@@ -347,9 +415,9 @@ const SecurityConfig: React.FC = () => {
                             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
                             <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                                <form onSubmit={handleAddLimit}>
+                                <form onSubmit={handleSaveLimit}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Set Approval Limit</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingLimit ? 'Edit Approval Limit' : 'Set Approval Limit'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -391,9 +459,9 @@ const SecurityConfig: React.FC = () => {
                             <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
                             <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                                <form onSubmit={handleAddUser}>
+                                <form onSubmit={handleSaveUser}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add New User</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingUser ? 'Edit User' : 'Add New User'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Employee ID</label>

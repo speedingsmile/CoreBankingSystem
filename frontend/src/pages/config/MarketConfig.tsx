@@ -35,26 +35,45 @@ const MarketConfig: React.FC = () => {
     const [newMarket, setNewMarket] = useState({ mic: '', name: '', currency: 'USD', timezone: 'UTC' });
     const [newValuation, setNewValuation] = useState({ assetClass: '', method: '', source: '' });
 
+    const [editingAsset, setEditingAsset] = useState<any>(null);
+    const [editingMarket, setEditingMarket] = useState<any>(null);
+    const [editingValuation, setEditingValuation] = useState<any>(null);
+
     const handleSaveAssetClass = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `AC00${assetClasses.length + 1}`;
-        setAssetClasses([...assetClasses, { id: newId, ...newAsset }]);
+        if (editingAsset) {
+            setAssetClasses(assetClasses.map(ac => ac.id === editingAsset.id ? { ...ac, ...newAsset } : ac));
+            setEditingAsset(null);
+        } else {
+            const newId = `AC00${assetClasses.length + 1}`;
+            setAssetClasses([...assetClasses, { id: newId, ...newAsset }]);
+        }
         setShowAssetModal(false);
         setNewAsset({ name: '', type: '', settlement: 'T+2' });
     };
 
     const handleSaveMarket = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `MKT00${markets.length + 1}`;
-        setMarkets([...markets, { id: newId, ...newMarket }]);
+        if (editingMarket) {
+            setMarkets(markets.map(m => m.id === editingMarket.id ? { ...m, ...newMarket } : m));
+            setEditingMarket(null);
+        } else {
+            const newId = `MKT00${markets.length + 1}`;
+            setMarkets([...markets, { id: newId, ...newMarket }]);
+        }
         setShowMarketModal(false);
         setNewMarket({ mic: '', name: '', currency: 'USD', timezone: 'UTC' });
     };
 
     const handleSaveValuationRule = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `VR00${valuationRules.length + 1}`;
-        setValuationRules([...valuationRules, { id: newId, ...newValuation }]);
+        if (editingValuation) {
+            setValuationRules(valuationRules.map(vr => vr.id === editingValuation.id ? { ...vr, ...newValuation } : vr));
+            setEditingValuation(null);
+        } else {
+            const newId = `VR00${valuationRules.length + 1}`;
+            setValuationRules([...valuationRules, { id: newId, ...newValuation }]);
+        }
         setShowValuationModal(false);
         setNewValuation({ assetClass: '', method: '', source: '' });
     };
@@ -112,7 +131,11 @@ const MarketConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Asset Classes</h3>
                                             <button
-                                                onClick={() => setShowAssetModal(true)}
+                                                onClick={() => {
+                                                    setEditingAsset(null);
+                                                    setNewAsset({ name: '', type: '', settlement: 'T+2' });
+                                                    setShowAssetModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Add Asset Class
@@ -126,6 +149,7 @@ const MarketConfig: React.FC = () => {
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Settlement</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -135,6 +159,18 @@ const MarketConfig: React.FC = () => {
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ac.name}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ac.type}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ac.settlement}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                <button onClick={() => {
+                                                                    setEditingAsset(ac);
+                                                                    setNewAsset({ name: ac.name, type: ac.type, settlement: ac.settlement });
+                                                                    setShowAssetModal(true);
+                                                                }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                <button onClick={() => {
+                                                                    if (window.confirm("Delete this asset class?")) {
+                                                                        setAssetClasses(assetClasses.filter(item => item.id !== ac.id));
+                                                                    }
+                                                                }} className="text-red-600 hover:text-red-900">Delete</button>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -147,7 +183,11 @@ const MarketConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Market Setup</h3>
                                             <button
-                                                onClick={() => setShowMarketModal(true)}
+                                                onClick={() => {
+                                                    setEditingMarket(null);
+                                                    setNewMarket({ mic: '', name: '', currency: 'USD', timezone: 'UTC' });
+                                                    setShowMarketModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Add Market
@@ -161,6 +201,7 @@ const MarketConfig: React.FC = () => {
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Market Name</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timezone</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -170,6 +211,18 @@ const MarketConfig: React.FC = () => {
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{mkt.name}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{mkt.currency}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{mkt.timezone}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                <button onClick={() => {
+                                                                    setEditingMarket(mkt);
+                                                                    setNewMarket({ mic: mkt.mic, name: mkt.name, currency: mkt.currency, timezone: mkt.timezone });
+                                                                    setShowMarketModal(true);
+                                                                }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                <button onClick={() => {
+                                                                    if (window.confirm("Delete this market?")) {
+                                                                        setMarkets(markets.filter(item => item.id !== mkt.id));
+                                                                    }
+                                                                }} className="text-red-600 hover:text-red-900">Delete</button>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -182,7 +235,11 @@ const MarketConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Valuation Logic</h3>
                                             <button
-                                                onClick={() => setShowValuationModal(true)}
+                                                onClick={() => {
+                                                    setEditingValuation(null);
+                                                    setNewValuation({ assetClass: '', method: '', source: '' });
+                                                    setShowValuationModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Add Valuation Rule
@@ -195,6 +252,7 @@ const MarketConfig: React.FC = () => {
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset Class</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valuation Method</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Source</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -203,6 +261,18 @@ const MarketConfig: React.FC = () => {
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{rule.assetClass}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rule.method}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rule.source}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                <button onClick={() => {
+                                                                    setEditingValuation(rule);
+                                                                    setNewValuation({ assetClass: rule.assetClass, method: rule.method, source: rule.source });
+                                                                    setShowValuationModal(true);
+                                                                }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                <button onClick={() => {
+                                                                    if (window.confirm("Delete this valuation rule?")) {
+                                                                        setValuationRules(valuationRules.filter(item => item.id !== rule.id));
+                                                                    }
+                                                                }} className="text-red-600 hover:text-red-900">Delete</button>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -224,7 +294,7 @@ const MarketConfig: React.FC = () => {
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                                 <form onSubmit={handleSaveAssetClass}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Asset Class</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingAsset ? 'Edit Asset Class' : 'Add Asset Class'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -281,7 +351,7 @@ const MarketConfig: React.FC = () => {
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                                 <form onSubmit={handleSaveMarket}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Market</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingMarket ? 'Edit Market' : 'Add Market'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Market Name</label>
@@ -348,7 +418,7 @@ const MarketConfig: React.FC = () => {
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                                 <form onSubmit={handleSaveValuationRule}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Valuation Rule</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingValuation ? 'Edit Valuation Rule' : 'Add Valuation Rule'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Asset Class</label>

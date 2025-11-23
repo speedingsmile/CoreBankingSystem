@@ -38,26 +38,46 @@ const ClientConfig: React.FC = () => {
     const [newDocRule, setNewDocRule] = useState({ docName: '', mandatory: true });
     const [newConstraint, setNewConstraint] = useState({ field: '', requirement: 'OPTIONAL' });
 
+    const [editingType, setEditingType] = useState<any>(null);
+
     const handleSaveCustomerType = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `CT00${customerTypes.length + 1}`;
-        setCustomerTypes([...customerTypes, { id: newId, ...newType }]);
+        if (editingType) {
+            setCustomerTypes(customerTypes.map(t => t.id === editingType.id ? { ...t, ...newType } : t));
+            setEditingType(null);
+        } else {
+            const newId = `CT00${customerTypes.length + 1}`;
+            setCustomerTypes([...customerTypes, { id: newId, ...newType }]);
+        }
         setShowTypeModal(false);
         setNewType({ name: '', description: '' });
     };
 
+    const [editingDocRule, setEditingDocRule] = useState<any>(null);
+    const [editingConstraint, setEditingConstraint] = useState<any>(null);
+
     const handleSaveDocRule = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `DR00${docRules.length + 1}`;
-        setDocRules([...docRules, { id: newId, typeId: selectedType, ...newDocRule }]);
+        if (editingDocRule) {
+            setDocRules(docRules.map(r => r.id === editingDocRule.id ? { ...r, ...newDocRule, typeId: selectedType } : r));
+            setEditingDocRule(null);
+        } else {
+            const newId = `DR00${docRules.length + 1}`;
+            setDocRules([...docRules, { id: newId, typeId: selectedType, ...newDocRule }]);
+        }
         setShowDocModal(false);
         setNewDocRule({ docName: '', mandatory: true });
     };
 
     const handleSaveConstraint = (e: React.FormEvent) => {
         e.preventDefault();
-        const newId = `DC00${constraints.length + 1}`;
-        setConstraints([...constraints, { id: newId, typeId: selectedType, ...newConstraint }]);
+        if (editingConstraint) {
+            setConstraints(constraints.map(c => c.id === editingConstraint.id ? { ...c, ...newConstraint, typeId: selectedType } : c));
+            setEditingConstraint(null);
+        } else {
+            const newId = `DC00${constraints.length + 1}`;
+            setConstraints([...constraints, { id: newId, typeId: selectedType, ...newConstraint }]);
+        }
         setShowConstraintModal(false);
         setNewConstraint({ field: '', requirement: 'OPTIONAL' });
     };
@@ -115,7 +135,11 @@ const ClientConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Customer Types</h3>
                                             <button
-                                                onClick={() => setShowTypeModal(true)}
+                                                onClick={() => {
+                                                    setEditingType(null);
+                                                    setNewType({ name: '', description: '' });
+                                                    setShowTypeModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Add Customer Type
@@ -128,6 +152,7 @@ const ClientConfig: React.FC = () => {
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type ID</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -136,6 +161,18 @@ const ClientConfig: React.FC = () => {
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{type.id}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{type.name}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{type.description}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                <button onClick={() => {
+                                                                    setEditingType(type);
+                                                                    setNewType({ name: type.name, description: type.description });
+                                                                    setShowTypeModal(true);
+                                                                }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                <button onClick={() => {
+                                                                    if (window.confirm("Are you sure you want to archive this customer type?")) {
+                                                                        setCustomerTypes(customerTypes.filter(t => t.id !== type.id));
+                                                                    }
+                                                                }} className="text-red-600 hover:text-red-900">Archive</button>
+                                                            </td>
                                                         </tr>
                                                     ))}
                                                 </tbody>
@@ -158,7 +195,11 @@ const ClientConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Required Documents</h3>
                                             <button
-                                                onClick={() => setShowDocModal(true)}
+                                                onClick={() => {
+                                                    setEditingDocRule(null);
+                                                    setNewDocRule({ docName: '', mandatory: true });
+                                                    setShowDocModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Add Document Rule
@@ -170,6 +211,7 @@ const ClientConfig: React.FC = () => {
                                                     <tr>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Document Name</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requirement</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -182,6 +224,18 @@ const ClientConfig: React.FC = () => {
                                                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${rule.mandatory ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                                         {rule.mandatory ? 'Mandatory' : 'Optional'}
                                                                     </span>
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                    <button onClick={() => {
+                                                                        setEditingDocRule(rule);
+                                                                        setNewDocRule({ docName: rule.docName, mandatory: rule.mandatory });
+                                                                        setShowDocModal(true);
+                                                                    }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                    <button onClick={() => {
+                                                                        if (window.confirm("Delete this document rule?")) {
+                                                                            setDocRules(docRules.filter(r => r.id !== rule.id));
+                                                                        }
+                                                                    }} className="text-red-600 hover:text-red-900">Delete</button>
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -205,7 +259,11 @@ const ClientConfig: React.FC = () => {
                                         <div className="flex justify-between items-center mb-4">
                                             <h3 className="text-lg leading-6 font-medium text-gray-900">Field Constraints</h3>
                                             <button
-                                                onClick={() => setShowConstraintModal(true)}
+                                                onClick={() => {
+                                                    setEditingConstraint(null);
+                                                    setNewConstraint({ field: '', requirement: 'OPTIONAL' });
+                                                    setShowConstraintModal(true);
+                                                }}
                                                 className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
                                             >
                                                 Add Constraint
@@ -217,6 +275,7 @@ const ClientConfig: React.FC = () => {
                                                     <tr>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Field Name</th>
                                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requirement</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody className="bg-white divide-y divide-gray-200">
@@ -229,6 +288,18 @@ const ClientConfig: React.FC = () => {
                                                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${c.requirement === 'MANDATORY' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                                                                         {c.requirement}
                                                                     </span>
+                                                                </td>
+                                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                                                    <button onClick={() => {
+                                                                        setEditingConstraint(c);
+                                                                        setNewConstraint({ field: c.field, requirement: c.requirement });
+                                                                        setShowConstraintModal(true);
+                                                                    }} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                                                    <button onClick={() => {
+                                                                        if (window.confirm("Delete this constraint?")) {
+                                                                            setConstraints(constraints.filter(item => item.id !== c.id));
+                                                                        }
+                                                                    }} className="text-red-600 hover:text-red-900">Delete</button>
                                                                 </td>
                                                             </tr>
                                                         ))}
@@ -251,7 +322,7 @@ const ClientConfig: React.FC = () => {
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                                 <form onSubmit={handleSaveCustomerType}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Customer Type</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingType ? 'Edit Customer Type' : 'Add Customer Type'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Name</label>
@@ -298,7 +369,7 @@ const ClientConfig: React.FC = () => {
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                                 <form onSubmit={handleSaveDocRule}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Document Rule</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingDocRule ? 'Edit Document Rule' : 'Add Document Rule'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Document Name</label>
@@ -348,7 +419,7 @@ const ClientConfig: React.FC = () => {
                             <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                                 <form onSubmit={handleSaveConstraint}>
                                     <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Field Constraint</h3>
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">{editingConstraint ? 'Edit Field Constraint' : 'Add Field Constraint'}</h3>
                                         <div className="grid grid-cols-1 gap-4">
                                             <div>
                                                 <label className="block text-sm font-medium text-gray-700">Field Name</label>

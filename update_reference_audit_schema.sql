@@ -35,4 +35,4 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 CREATE INDEX idx_audit_entity ON audit_logs(entity_name, entity_id);
-CREATE INDEX idx_audit_timestamp ON audit_logs(timestamp);
+∑

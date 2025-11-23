@@ -139,6 +139,8 @@ A comprehensive module for defining the banking system's behavior:
    docker-compose up --build
    ```
    This starts Postgres, Kafka, Zookeeper, and the Ledger Service (Backend).
+   
+   > **Note**: You can access the **Kafka UI** at `http://localhost:8088` to monitor topics and messages.
 
 2. **Start Frontend**:
    Open a new terminal:
