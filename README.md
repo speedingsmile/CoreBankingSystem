@@ -12,7 +12,7 @@ A robust, full-stack Core Banking System designed for scalability and performanc
 
 - **Double-Entry Ledger**: Immutable transaction recording with full audit trails.
 - **Account Management**: Support for Asset, Liability, Equity, Income, and Expense accounts.
-- **Product Factory**: Flexible configuration for banking products and interest rules.
+- **System Configuration**: Comprehensive Product Factory, Fee Engine, KYC Rules, and Role-Based Access Control.
 - **Payments Engine**: Handle deposits, withdrawals, and internal transfers seamlessly.
 - **Securities & Trading**: Integrated Security Master File and portfolio tracking.
 - **Event-Driven**: Built on Apache Kafka for real-time event streaming and integration.

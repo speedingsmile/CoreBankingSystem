@@ -32,11 +32,28 @@ The Core Banking System is a robust, full-stack application designed to handle e
 
 ### 1. Account Management
 - **Create Accounts**: Support for various account types (Asset, Liability, Equity, Income, Expense).
-- **Product Factory**: Define and assign banking products to accounts.
 - **Interest Calculation**: Automated interest calculation for accounts.
 - **Client Management**: Manage client profiles and link them to accounts.
 
-### 2. Transaction Processing
+### 2. System Configuration & Product Factory
+A comprehensive module for defining the banking system's behavior:
+- **Product Factory**:
+  - **Chart of Accounts (COA)**: Define the General Ledger hierarchy.
+  - **Event Mapping**: Map business events (e.g., Deposit, Withdrawal) to specific Debit/Credit GL accounts.
+  - **Fee Engine**: Configure flat or percentage-based fees and attach them to products with waiver logic.
+- **Client Administration**:
+  - **KYC Framework**: Define customer types (Retail, Corporate) and mandatory documentation rules.
+  - **Data Constraints**: Enforce specific data fields based on customer type.
+- **Securities Configuration**:
+  - **Asset Classes**: Define asset types (Equity, Bond, ETF) and settlement cycles.
+  - **Market Setup**: Configure trading markets (MIC, Currency, Timezone).
+  - **Valuation Logic**: Set rules for asset valuation (e.g., Last Traded Price, Mid Price).
+- **Security & Access Control**:
+  - **RBAC**: Role-Based Access Control with granular permission registry.
+  - **Approval Limits**: Set transaction limits per role and currency.
+  - **User Management**: Onboard staff and assign roles.
+
+### 3. Transaction Processing
 - **Core Transactions**: Double-entry ledger recording.
 - **Payments**:
   - **Deposit**: Add funds to an account.
@@ -44,12 +61,12 @@ The Core Banking System is a robust, full-stack application designed to handle e
   - **Transfer**: Move funds between internal accounts.
 - **Transaction History**: View detailed transaction logs for auditing.
 
-### 3. Securities & Trading
+### 4. Securities & Trading
 - **Security Master File**: Manage a list of tradable securities.
 - **Market Data Integration**: Sync real-time (mocked) market prices.
 - **Portfolio Management**: Track security holdings (integrated with ledger).
 
-### 4. Security & Operations
+### 5. Security & Operations
 - **Authentication**: Secure login with JWT issuance and validation.
 - **Role-Based Access**: Protected API endpoints.
 - **Event Streaming**: Publishes transaction events to Kafka for downstream processing.

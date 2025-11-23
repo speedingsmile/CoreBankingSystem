@@ -11,6 +11,7 @@ import Accounts from './pages/Accounts';
 import ClientConfig from './pages/config/ClientConfig';
 import ProductConfig from './pages/config/ProductConfig';
 import MarketConfig from './pages/config/MarketConfig';
+import SecurityConfig from './pages/config/SecurityConfig';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -92,6 +93,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MarketConfig />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/configuration/security"
+            element={
+              <ProtectedRoute>
+                <SecurityConfig />
               </ProtectedRoute>
             }
           />

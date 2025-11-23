@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"strings"
 
+	"github.com/nathanmocogni/core-banking-system/internal/audit"
 	"github.com/nathanmocogni/core-banking-system/internal/auth"
 	"github.com/nathanmocogni/core-banking-system/internal/database"
 	"github.com/nathanmocogni/core-banking-system/internal/events"
@@ -46,6 +48,17 @@ func main() {
 		fmt.Printf("Kafka Producer initialized for brokers: %v\n", brokers)
 	} else {
 		fmt.Println("Warning: KAFKA_BROKERS not set, events will not be published.")
+	}
+
+	// Audit Consumer Setup
+	if kafkaBrokers != "" {
+		brokers := strings.Split(kafkaBrokers, ",")
+		auditConsumer := audit.NewAuditConsumer(brokers, "system.audits", "audit-worker-group", db)
+		// Start consumer in a background goroutine
+		go func() {
+			fmt.Println("Starting Audit Consumer...")
+			auditConsumer.Start(context.Background())
+		}()
 	}
 
 	fmt.Println("Starting server on :8080...")

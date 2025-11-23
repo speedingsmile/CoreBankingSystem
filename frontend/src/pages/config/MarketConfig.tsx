@@ -4,6 +4,61 @@ import Layout from '../../components/Layout';
 const MarketConfig: React.FC = () => {
     const [activeTab, setActiveTab] = useState('asset_classes');
 
+    // Mock Data for Asset Classes
+    const [assetClasses, setAssetClasses] = useState([
+        { id: 'AC001', name: 'Equity', type: 'Common Stock', settlement: 'T+2' },
+        { id: 'AC002', name: 'Government Bond', type: 'Fixed Income', settlement: 'T+1' },
+        { id: 'AC003', name: 'ETF', type: 'Exchange Traded Fund', settlement: 'T+2' },
+    ]);
+
+    // Mock Data for Markets
+    const [markets, setMarkets] = useState([
+        { id: 'MKT001', mic: 'XNYS', name: 'New York Stock Exchange', currency: 'USD', timezone: 'EST' },
+        { id: 'MKT002', mic: 'XNAS', name: 'NASDAQ', currency: 'USD', timezone: 'EST' },
+        { id: 'MKT003', mic: 'XLON', name: 'London Stock Exchange', currency: 'GBP', timezone: 'GMT' },
+    ]);
+
+    // Mock Data for Valuation Logic
+    const [valuationRules, setValuationRules] = useState([
+        { id: 'VR001', assetClass: 'Equity', method: 'Last Traded Price', source: 'Market Data Feed' },
+        { id: 'VR002', assetClass: 'Government Bond', method: 'Mid Price', source: 'Bloomberg' },
+        { id: 'VR003', assetClass: 'ETF', method: 'NAV', source: 'Fund Administrator' },
+    ]);
+
+    // Modal States
+    const [showAssetModal, setShowAssetModal] = useState(false);
+    const [showMarketModal, setShowMarketModal] = useState(false);
+    const [showValuationModal, setShowValuationModal] = useState(false);
+
+    // Form States
+    const [newAsset, setNewAsset] = useState({ name: '', type: '', settlement: 'T+2' });
+    const [newMarket, setNewMarket] = useState({ mic: '', name: '', currency: 'USD', timezone: 'UTC' });
+    const [newValuation, setNewValuation] = useState({ assetClass: '', method: '', source: '' });
+
+    const handleSaveAssetClass = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newId = `AC00${assetClasses.length + 1}`;
+        setAssetClasses([...assetClasses, { id: newId, ...newAsset }]);
+        setShowAssetModal(false);
+        setNewAsset({ name: '', type: '', settlement: 'T+2' });
+    };
+
+    const handleSaveMarket = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newId = `MKT00${markets.length + 1}`;
+        setMarkets([...markets, { id: newId, ...newMarket }]);
+        setShowMarketModal(false);
+        setNewMarket({ mic: '', name: '', currency: 'USD', timezone: 'UTC' });
+    };
+
+    const handleSaveValuationRule = (e: React.FormEvent) => {
+        e.preventDefault();
+        const newId = `VR00${valuationRules.length + 1}`;
+        setValuationRules([...valuationRules, { id: newId, ...newValuation }]);
+        setShowValuationModal(false);
+        setNewValuation({ assetClass: '', method: '', source: '' });
+    };
+
     return (
         <Layout>
             <div className="py-10">
@@ -54,34 +109,104 @@ const MarketConfig: React.FC = () => {
                             <div className="p-6">
                                 {activeTab === 'asset_classes' && (
                                     <div>
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900">Asset Classes</h3>
-                                        <p className="mt-2 text-sm text-gray-500">
-                                            Define broad categories (Equity, Bond, ETF) and their behaviors.
-                                        </p>
-                                        <div className="mt-4 border-4 border-dashed border-gray-200 rounded-lg h-48 flex items-center justify-center">
-                                            <span className="text-gray-400">Asset Classes UI</span>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-lg leading-6 font-medium text-gray-900">Asset Classes</h3>
+                                            <button
+                                                onClick={() => setShowAssetModal(true)}
+                                                className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                                            >
+                                                Add Asset Class
+                                            </button>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Settlement</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {assetClasses.map((ac) => (
+                                                        <tr key={ac.id}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ac.id}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ac.name}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ac.type}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ac.settlement}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 )}
                                 {activeTab === 'markets' && (
                                     <div>
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900">Market Setup</h3>
-                                        <p className="mt-2 text-sm text-gray-500">
-                                            Define Markets (NYSE, NASDAQ) and their settlement cycles.
-                                        </p>
-                                        <div className="mt-4 border-4 border-dashed border-gray-200 rounded-lg h-48 flex items-center justify-center">
-                                            <span className="text-gray-400">Market Setup UI</span>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-lg leading-6 font-medium text-gray-900">Market Setup</h3>
+                                            <button
+                                                onClick={() => setShowMarketModal(true)}
+                                                className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                                            >
+                                                Add Market
+                                            </button>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">MIC</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Market Name</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Currency</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timezone</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {markets.map((mkt) => (
+                                                        <tr key={mkt.id}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{mkt.mic}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{mkt.name}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{mkt.currency}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{mkt.timezone}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 )}
                                 {activeTab === 'valuation' && (
                                     <div>
-                                        <h3 className="text-lg leading-6 font-medium text-gray-900">Valuation Logic</h3>
-                                        <p className="mt-2 text-sm text-gray-500">
-                                            Define how the sync endpoint processes data (e.g., Last Traded Price vs. Bid/Ask).
-                                        </p>
-                                        <div className="mt-4 border-4 border-dashed border-gray-200 rounded-lg h-48 flex items-center justify-center">
-                                            <span className="text-gray-400">Valuation Logic UI</span>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="text-lg leading-6 font-medium text-gray-900">Valuation Logic</h3>
+                                            <button
+                                                onClick={() => setShowValuationModal(true)}
+                                                className="px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                                            >
+                                                Add Valuation Rule
+                                            </button>
+                                        </div>
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full divide-y divide-gray-200">
+                                                <thead className="bg-gray-50">
+                                                    <tr>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asset Class</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valuation Method</th>
+                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Source</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="bg-white divide-y divide-gray-200">
+                                                    {valuationRules.map((rule) => (
+                                                        <tr key={rule.id}>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{rule.assetClass}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rule.method}</td>
+                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{rule.source}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
                                     </div>
                                 )}
@@ -89,9 +214,191 @@ const MarketConfig: React.FC = () => {
                         </div>
                     </div>
                 </main>
+
+                {/* Asset Class Modal */}
+                {showAssetModal && (
+                    <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                <form onSubmit={handleSaveAssetClass}>
+                                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Asset Class</h3>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Name</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newAsset.name}
+                                                    onChange={(e) => setNewAsset({ ...newAsset, name: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Type</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newAsset.type}
+                                                    onChange={(e) => setNewAsset({ ...newAsset, type: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Settlement Cycle</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newAsset.settlement}
+                                                    onChange={(e) => setNewAsset({ ...newAsset, settlement: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                        <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                            Save
+                                        </button>
+                                        <button type="button" onClick={() => setShowAssetModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Market Modal */}
+                {showMarketModal && (
+                    <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                <form onSubmit={handleSaveMarket}>
+                                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Market</h3>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Market Name</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newMarket.name}
+                                                    onChange={(e) => setNewMarket({ ...newMarket, name: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">MIC Code</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newMarket.mic}
+                                                    onChange={(e) => setNewMarket({ ...newMarket, mic: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Currency</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newMarket.currency}
+                                                    onChange={(e) => setNewMarket({ ...newMarket, currency: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Timezone</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newMarket.timezone}
+                                                    onChange={(e) => setNewMarket({ ...newMarket, timezone: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                        <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                            Save
+                                        </button>
+                                        <button type="button" onClick={() => setShowMarketModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Valuation Rule Modal */}
+                {showValuationModal && (
+                    <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+                            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+                            <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                                <form onSubmit={handleSaveValuationRule}>
+                                    <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add Valuation Rule</h3>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Asset Class</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newValuation.assetClass}
+                                                    onChange={(e) => setNewValuation({ ...newValuation, assetClass: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Valuation Method</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newValuation.method}
+                                                    onChange={(e) => setNewValuation({ ...newValuation, method: e.target.value })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700">Data Source</label>
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                                    value={newValuation.source}
+                                                    onChange={(e) => setNewValuation({ ...newValuation, source: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                        <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
+                                            Save
+                                        </button>
+                                        <button type="button" onClick={() => setShowValuationModal(false)} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </Layout>
     );
 };
+
 
 export default MarketConfig;

@@ -109,6 +109,35 @@ const Configuration: React.FC = () => {
                                 </div>
                             </div>
 
+                            {/* Security & Access Control */}
+                            <div className="bg-white overflow-hidden shadow rounded-lg">
+                                <div className="px-4 py-5 sm:p-6">
+                                    <h3 className="text-lg font-medium leading-6 text-gray-900 border-b pb-2">Security & Access Control</h3>
+                                    <div className="mt-4 space-y-4">
+                                        <div>
+                                            <h4 className="text-sm font-bold text-gray-700">Role Builder</h4>
+                                            <p className="text-xs text-gray-500">Define abstract roles and map permissions.</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-gray-700">Approval Limits</h4>
+                                            <p className="text-xs text-gray-500">Set transaction limits and maker/checker rules.</p>
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-bold text-gray-700">User Management</h4>
+                                            <p className="text-xs text-gray-500">Onboard staff and assign roles/branches.</p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-6">
+                                        <button
+                                            onClick={() => navigate('/configuration/security')}
+                                            className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
+                                        >
+                                            Configure Security
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </main>
