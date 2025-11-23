@@ -1,0 +1,19 @@
+FROM golang:1.23-alpine
+
+# Install curl and jq
+RUN apk add --no-cache curl jq bash
+
+WORKDIR /app
+
+# Copy go.mod and go.sum to cache dependencies
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy the rest of the application code
+COPY . .
+
+# Make scripts executable
+RUN chmod +x *.sh
+
+# Default command (can be overridden)
+CMD ["./test_ledger.sh"]

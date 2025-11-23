@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Core Banking System</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1, h2 { color: #333; }
+        .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        button { background-color: #007BFF; color: white; padding: 10px 15px; border: none; cursor: pointer; border-radius: 3px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f4f4f4; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Core Banking System</h1>
+
+    <div class="card">
+        <h2>Create Account</h2>
+        <label>Name</label>
+        <input type="text" id="accName" placeholder="e.g., My Savings">
+        <label>Type</label>
+        <select id="accType">
+            <option value="ASSET">Asset</option>
+            <option value="LIABILITY">Liability (Customer Account)</option>
+            <option value="EQUITY">Equity</option>
+            <option value="INCOME">Income</option>
+            <option value="EXPENSE">Expense</option>
+        </select>
+        <button onclick="createAccount()">Create Account</button>
+        <pre id="createAccResult"></pre>
+    </div>
+
+    <div class="card">
+        <h2>Get Account</h2>
+        <label>Account ID</label>
+        <input type="text" id="getAccId">
+        <button onclick="getAccount()">Get Details</button>
+        <pre id="getAccResult"></pre>
+    </div>
+
+    <div class="card">
+        <h2>Deposit (External)</h2>
+        <label>Account ID</label>
+        <input type="text" id="depAccId">
+        <label>Amount (Cents)</label>
+        <input type="number" id="depAmount" placeholder="e.g., 1000 for $10.00">
+        <button onclick="deposit()">Deposit</button>
+        <pre id="depResult"></pre>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080';
+
+        async function createAccount() {
+            const name = document.getElementById('accName').value;
+            const type = document.getElementById('accType').value;
+            const res = await fetch(`${API_URL}/accounts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, type, currency: 'USD' })
+            });
+            const data = await res.json();
+            document.getElementById('createAccResult').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function getAccount() {
+            const id = document.getElementById('getAccId').value;
+            const res = await fetch(`${API_URL}/accounts?id=${id}`);
+            const data = await res.json();
+            document.getElementById('getAccResult').textContent = JSON.stringify(data, null, 2);
+        }
+
+        async function deposit() {
+            const account_id = document.getElementById('depAccId').value;
+            const amount = parseInt(document.getElementById('depAmount').value);
+            const res = await fetch(`${API_URL}/payments/deposit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ account_id, amount, currency: 'USD' })
+            });
+            const data = await res.json();
+            document.getElementById('depResult').textContent = JSON.stringify(data, null, 2);
+        }
+    </script>
+</body>
+</html>

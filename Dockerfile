@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o /core-banking-system ./cmd/server/main.go
+RUN go build -o /core-banking-system ./cmd/server
 
 EXPOSE 8080
 

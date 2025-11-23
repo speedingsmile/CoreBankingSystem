@@ -9,6 +9,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:latest
+        env:
+          POSTGRES_USER: user
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: ledger
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - uses: actions/checkout@v4
 
@@ -17,8 +32,25 @@ jobs:
       with:
         go-version: '1.21'
 
+    - name: Wait for Postgres
+      run: |
+        while ! pg_isready -h localhost -p 5432 -U user; do
+          sleep 1
+        done
+
+    - name: Initialize Database
+      env:
+        PGPASSWORD: password
+      run: psql -h localhost -p 5432 -U user -d ledger -f db/schema.sql
+
     - name: Build
       run: go build -v ./...
 
     - name: Test
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+        DB_USER: user
+        DB_PASSWORD: password
+        DB_NAME: ledger
       run: go test -v ./...
