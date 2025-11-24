@@ -1,5 +1,6 @@
 # Core Banking System
 
+[![Go CI](https://github.com/speedingsmile/CoreBankingSystem/actions/workflows/ci.yml/badge.svg)](https://github.com/speedingsmile/CoreBankingSystem/actions/workflows/ci.yml)
 ![Go](https://img.shields.io/badge/Go-1.23-00ADD8?style=flat&logo=go)
 ![React](https://img.shields.io/badge/React-19-61DAFB?style=flat&logo=react)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat&logo=postgresql)
