@@ -250,7 +250,10 @@ func TestFeeManagement(t *testing.T) {
 	service := NewService(db, nil)
 
 	// Create GL Account for Fees
-	glAcc, _ := service.CreateAccount("Fee Income", Income, "USD", "REVENUE", "SYSTEM", nil)
+	glAcc, err := service.CreateAccount("Fee Income", Income, "USD", "REVENUE", "SYSTEM", nil)
+	if err != nil {
+		t.Fatalf("Failed to create GL account: %v", err)
+	}
 
 	// Create Fee
 	fee, err := service.CreateFee("Monthly Fee", "FLAT", 10.0, "MONTHLY", glAcc.ID)
