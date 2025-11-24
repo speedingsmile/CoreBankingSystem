@@ -2,5 +2,3 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS status VARCHAR(20) DEFAULT 'DRAFT'
 ALTER TABLE products ADD COLUMN IF NOT EXISTS version INT DEFAULT 1;
 ALTER TABLE products ADD COLUMN IF NOT EXISTS parent_product_id UUID;
 
-
-select * from products

@@ -75,6 +75,15 @@ jobs:
         psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_schema.sql
         psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_securities_schema.sql
 
+    - name: Debug Database After Init
+      env:
+        PGPASSWORD: password
+      run: |
+        echo "Listing tables in ledger_db:"
+        psql -h localhost -p 5432 -U user -d ledger_db -c "\dt"
+        echo "Checking accounts table schema:"
+        psql -h localhost -p 5432 -U user -d ledger_db -c "\d accounts"
+
     - name: Debug Database
       env:
         PGPASSWORD: password
