@@ -34,6 +34,9 @@ func TestPublish_Integration(t *testing.T) {
 	// We'll try to dial the broker first.
 	broker := os.Getenv("KAFKA_BROKER")
 	if broker == "" {
+		broker = os.Getenv("KAFKA_BROKERS")
+	}
+	if broker == "" {
 		broker = "localhost:9093" // Default for local docker-compose
 	}
 	conn, err := kafka.Dial("tcp", broker)

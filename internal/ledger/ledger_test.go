@@ -284,12 +284,24 @@ func TestCalculateInterest(t *testing.T) {
 	service := NewService(db, nil)
 
 	// 1. Setup Product (5% interest)
-	prod, _ := service.CreateProduct("Interest Product", 500) // 5% = 500 bps
-	service.UpdateProduct(prod.ID, "Interest Product", 500, ProductStatusActive)
+	prod, err := service.CreateProduct("Interest Product", 500) // 5% = 500 bps
+	if err != nil {
+		t.Fatalf("Failed to create product: %v", err)
+	}
+	_, err = service.UpdateProduct(prod.ID, "Interest Product", 500, ProductStatusActive)
+	if err != nil {
+		t.Fatalf("Failed to activate product: %v", err)
+	}
 
 	// 2. Setup Account with Balance
-	acc, _ := service.CreateAccount("Interest User", Liability, "USD", "CASH", "INDIVIDUAL", nil)
-	service.AssignProduct(acc.ID, prod.ID)
+	acc, err := service.CreateAccount("Interest User", Liability, "USD", "CASH", "INDIVIDUAL", nil)
+	if err != nil {
+		t.Fatalf("Failed to create account: %v", err)
+	}
+	err = service.AssignProduct(acc.ID, prod.ID)
+	if err != nil {
+		t.Fatalf("Failed to assign product: %v", err)
+	}
 
 	// Deposit 10,000
 	// Liability Credit -> Balance -10,000

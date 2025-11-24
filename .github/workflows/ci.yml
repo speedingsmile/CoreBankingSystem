@@ -75,6 +75,13 @@ jobs:
         psql -h localhost -p 5432 -U user -d ledger_db -f update_schema.sql
         psql -h localhost -p 5432 -U user -d ledger_db -f update_securities_schema.sql
 
+    - name: Debug Database
+      env:
+        PGPASSWORD: password
+      run: |
+        psql -h localhost -p 5432 -U user -d ledger_db -c "\dt"
+        psql -h localhost -p 5432 -U user -d ledger_db -c "SELECT * FROM pg_extension;"
+
     - name: Build
       run: go build -v ./...
 
@@ -86,4 +93,5 @@ jobs:
         DB_PASSWORD: password
         DB_NAME: ledger_db
         KAFKA_BROKER: localhost:9092
+        KAFKA_BROKERS: localhost:9092
       run: go test -v ./...
