@@ -13,10 +13,38 @@ import (
 
 // TestMain handles setup and teardown for the test suite.
 func TestMain(m *testing.M) {
-	// Ensure we are running in an environment where we can connect to the DB.
-	// For local testing, we assume the docker container is running on port 5433 (mapped).
-	// If running inside docker, it might be different.
-	// We'll skip if DB connection fails.
+	// Debug: Print DB Connection Info
+	fmt.Println("DEBUG: Starting TestMain")
+	db, err := connectDB()
+	if err != nil {
+		fmt.Printf("DEBUG: Failed to connect to DB: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Check DB Name and User
+	var currentDB, currentUser string
+	err = db.QueryRow("SELECT current_database(), current_user").Scan(&currentDB, &currentUser)
+	if err != nil {
+		fmt.Printf("DEBUG: Failed to query current db/user: %v\n", err)
+	} else {
+		fmt.Printf("DEBUG: Connected to DB: %s as User: %s\n", currentDB, currentUser)
+	}
+
+	// List Tables
+	rows, err := db.Query("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
+	if err != nil {
+		fmt.Printf("DEBUG: Failed to list tables: %v\n", err)
+	} else {
+		fmt.Println("DEBUG: Tables in public schema:")
+		for rows.Next() {
+			var table string
+			rows.Scan(&table)
+			fmt.Printf("  - %s\n", table)
+		}
+		rows.Close()
+	}
+	db.Close()
+
 	code := m.Run()
 	os.Exit(code)
 }
