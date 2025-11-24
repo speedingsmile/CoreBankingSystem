@@ -67,13 +67,13 @@ jobs:
       env:
         PGPASSWORD: password
       run: |
-        psql -h localhost -p 5432 -U user -d ledger_db -f db/schema.sql
-        psql -h localhost -p 5432 -U user -d ledger_db -f update_clients_accounts_schema.sql
-        psql -h localhost -p 5432 -U user -d ledger_db -f update_config_lifecycle_schema.sql
-        psql -h localhost -p 5432 -U user -d ledger_db -f update_product_schema.sql
-        psql -h localhost -p 5432 -U user -d ledger_db -f update_reference_audit_schema.sql
-        psql -h localhost -p 5432 -U user -d ledger_db -f update_schema.sql
-        psql -h localhost -p 5432 -U user -d ledger_db -f update_securities_schema.sql
+        psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f db/schema.sql
+        psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_clients_accounts_schema.sql
+        psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_config_lifecycle_schema.sql
+        psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_product_schema.sql
+        psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_reference_audit_schema.sql
+        psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_schema.sql
+        psql -v ON_ERROR_STOP=1 -h localhost -p 5432 -U user -d ledger_db -f update_securities_schema.sql
 
     - name: Debug Database
       env:
