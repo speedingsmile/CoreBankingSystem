@@ -8,16 +8,24 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/nathanmocogni/core-banking-system/internal/auth"
+	"github.com/nathanmocogni/core-banking-system/internal/batch"
 	"github.com/nathanmocogni/core-banking-system/internal/ledger"
 	"github.com/nathanmocogni/core-banking-system/internal/payment"
+	"github.com/nathanmocogni/core-banking-system/internal/workflow"
 )
 
 type Handler struct {
-	service *ledger.Service
+	service        *ledger.Service
+	batchEngine    *batch.Engine
+	workflowEngine *workflow.Engine
 }
 
-func NewHandler(service *ledger.Service) *Handler {
-	return &Handler{service: service}
+func NewHandler(service *ledger.Service, batchEngine *batch.Engine, workflowEngine *workflow.Engine) *Handler {
+	return &Handler{
+		service:        service,
+		batchEngine:    batchEngine,
+		workflowEngine: workflowEngine,
+	}
 }
 
 type CreateAccountRequest struct {
@@ -126,6 +134,49 @@ func (h *Handler) PostTransaction(w http.ResponseWriter, r *http.Request) {
 	var req PostTransactionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Calculate total amount for workflow check (sum of debits usually, or just max amount)
+	// For simplicity, we sum all amounts. In double entry, sum is 2x actual transfer.
+	// Let's take the max amount of any single entry as the "Transaction Amount"
+	var maxAmount int64
+	for _, e := range req.Entries {
+		if e.Amount > maxAmount {
+			maxAmount = e.Amount
+		}
+	}
+
+	// Workflow Check
+	payload := map[string]interface{}{
+		"amount":      maxAmount,
+		"reference":   req.Reference,
+		"description": req.Description,
+		"entries":     req.Entries,
+	}
+
+	def, err := h.workflowEngine.CheckWorkflow("TRANSACTION_POSTED", payload)
+	if err != nil {
+		// Log error but maybe proceed? Or fail safe.
+		fmt.Printf("Workflow check error: %v\n", err)
+	}
+
+	if def != nil {
+		// Start Workflow
+		// Mock Requester ID
+		requesterID := uuid.New()
+		inst, err := h.workflowEngine.StartWorkflow(def.ID, payload, &requesterID)
+		if err != nil {
+			http.Error(w, "Failed to start workflow: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusAccepted)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"status":               "PENDING_APPROVAL",
+			"workflow_instance_id": inst.ID,
+			"message":              "Transaction requires approval",
+		})
 		return
 	}
 
@@ -364,6 +415,131 @@ func (h *Handler) ListFees(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(fees)
+}
+
+// --- Batch Engine Handlers ---
+
+func (h *Handler) ListBatches(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	history, err := h.batchEngine.GetHistory()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(history)
+}
+
+func (h *Handler) TriggerBatch(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	jobName := r.URL.Query().Get("job")
+	if jobName == "" {
+		http.Error(w, "Missing job parameter", http.StatusBadRequest)
+		return
+	}
+
+	record, err := h.batchEngine.RunJob(r.Context(), jobName)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(record)
+}
+
+// --- Workflow Engine Handlers ---
+
+func (h *Handler) ListPendingApprovals(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// In a real app, we get the role from the JWT token claims
+	// For prototype, we'll accept a query param or header
+	role := r.Header.Get("X-Role")
+	if role == "" {
+		role = "MANAGER" // Default for testing
+	}
+
+	approvals, err := h.workflowEngine.GetPendingApprovals(role)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(approvals)
+}
+
+func (h *Handler) ApproveWorkflow(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid UUID", http.StatusBadRequest)
+		return
+	}
+
+	// Mock Approver ID (should come from token)
+	approverID := uuid.New()
+
+	err = h.workflowEngine.Approve(id, approverID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Approved"))
+}
+
+func (h *Handler) RejectWorkflow(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid UUID", http.StatusBadRequest)
+		return
+	}
+
+	// Mock Approver ID
+	approverID := uuid.New()
+
+	err = h.workflowEngine.Reject(id, approverID, "Rejected via API")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Rejected"))
 }
 
 type AssignProductRequest struct {

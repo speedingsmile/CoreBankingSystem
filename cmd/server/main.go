@@ -12,11 +12,13 @@ import (
 
 	"github.com/nathanmocogni/core-banking-system/internal/audit"
 	"github.com/nathanmocogni/core-banking-system/internal/auth"
+	"github.com/nathanmocogni/core-banking-system/internal/batch"
 	"github.com/nathanmocogni/core-banking-system/internal/database"
 	"github.com/nathanmocogni/core-banking-system/internal/events"
 	"github.com/nathanmocogni/core-banking-system/internal/integration"
 	"github.com/nathanmocogni/core-banking-system/internal/ledger"
 	"github.com/nathanmocogni/core-banking-system/internal/payment"
+	"github.com/nathanmocogni/core-banking-system/internal/workflow"
 )
 
 func main() {
@@ -64,7 +66,16 @@ func main() {
 	fmt.Println("Starting server on :8080...")
 
 	service := ledger.NewService(db, producer)
-	handler := NewHandler(service)
+	// Batch Engine Setup
+	batchEngine := batch.NewEngine(db, service)
+	batchEngine.RegisterJob(batch.NewDailyAccrualJob(service))
+	batchEngine.RegisterJob(batch.NewCapitalizationJob(service))
+	batchEngine.RegisterJob(batch.NewFeeSweeperJob(service))
+
+	// Workflow Engine Setup
+	workflowEngine := workflow.NewEngine(db)
+
+	handler := NewHandler(service, batchEngine, workflowEngine)
 	paymentService := payment.NewService(service)
 	paymentHandler := NewPaymentHandler(paymentService)
 
@@ -162,6 +173,13 @@ func main() {
 	http.Handle("/securities/sync", auth.Middleware(http.HandlerFunc(securityHandler.SyncPrice)))
 
 	http.Handle("/clients", auth.Middleware(http.HandlerFunc(clientHandler.HandleClients)))
+
+	// Batch & Workflow Endpoints
+	http.Handle("/admin/batches", auth.Middleware(http.HandlerFunc(handler.ListBatches)))
+	http.Handle("/admin/batches/trigger", auth.Middleware(http.HandlerFunc(handler.TriggerBatch)))
+	http.Handle("/workflow/approvals", auth.Middleware(http.HandlerFunc(handler.ListPendingApprovals)))
+	http.Handle("/workflow/approve", auth.Middleware(http.HandlerFunc(handler.ApproveWorkflow)))
+	http.Handle("/workflow/reject", auth.Middleware(http.HandlerFunc(handler.RejectWorkflow)))
 
 	if err := http.ListenAndServe(":8080", corsMiddleware(http.DefaultServeMux)); err != nil {
 		log.Fatalf("Server failed to start: %v", err)

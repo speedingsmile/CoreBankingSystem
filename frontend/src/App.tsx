@@ -12,6 +12,8 @@ import ClientConfig from './pages/config/ClientConfig';
 import ProductConfig from './pages/config/ProductConfig';
 import MarketConfig from './pages/config/MarketConfig';
 import SecurityConfig from './pages/config/SecurityConfig';
+import BatchMonitor from './pages/admin/BatchMonitor';
+import ProcessQueue from './pages/workflow/ProcessQueue';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth();
@@ -101,6 +103,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <SecurityConfig />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/batch-monitor"
+            element={
+              <ProtectedRoute>
+                <BatchMonitor />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/my-approvals"
+            element={
+              <ProtectedRoute>
+                <ProcessQueue />
               </ProtectedRoute>
             }
           />

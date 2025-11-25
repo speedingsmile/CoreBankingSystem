@@ -102,114 +102,101 @@ const Dashboard: React.FC = () => {
 
     return (
         <Layout>
-            <div className="py-10">
-                <header>
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                        <h1 className="text-3xl font-bold leading-tight text-gray-900">
-                            Dashboard
-                        </h1>
-                        <button
-                            onClick={() => setShowCreateModal(true)}
-                            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm"
-                        >
-                            Create Account
-                        </button>
+            <div className="space-y-6">
+                <header className="flex justify-between items-center">
+                    <div>
+                        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                        <p className="text-gray-500 mt-1">Welcome back, here's what's happening today.</p>
                     </div>
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="px-6 py-3 bg-brand-600 text-white rounded-xl shadow-lg shadow-brand-600/30 hover:bg-brand-700 transition-all font-medium"
+                    >
+                        + Create Account
+                    </button>
                 </header>
-                <main>
-                    <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 mt-6">
-                        {loading ? (
-                            <p>Loading accounts...</p>
-                        ) : (
-                            <div className="flex flex-col">
-                                <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                                    <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                                        <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                                            <table className="min-w-full divide-y divide-gray-200">
-                                                <thead className="bg-gray-50">
-                                                    <tr>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Name
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Type
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Currency
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Balance
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Created At
-                                                        </th>
-                                                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Actions
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-gray-200">
-                                                    {accounts.map((account) => (
-                                                        <tr key={account.id}>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                                {account.name}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {account.type}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {account.currency}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
-                                                                {(account.balance / 100).toFixed(2)}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                                {new Date(account.created_at).toLocaleDateString()}
-                                                            </td>
-                                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                                <button
-                                                                    onClick={() => openTransactionModal(account.id, 'DEPOSIT')}
-                                                                    className="text-green-600 hover:text-green-900 mr-4"
-                                                                >
-                                                                    Deposit
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => openTransactionModal(account.id, 'WITHDRAW')}
-                                                                    className="text-red-600 hover:text-red-900 mr-4"
-                                                                >
-                                                                    Withdraw
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => openHistoryModal(account.id)}
-                                                                    className="text-indigo-600 hover:text-indigo-900 mr-4"
-                                                                >
-                                                                    History
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => openTransferModal(account.id)}
-                                                                    className="text-blue-600 hover:text-blue-900"
-                                                                >
-                                                                    Transfer
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                                    {accounts.length === 0 && (
-                                                        <tr>
-                                                            <td colSpan={6} className="px-6 py-4 text-center text-sm text-gray-500">
-                                                                No accounts found.
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="glass-card p-6 rounded-3xl">
+                        <h3 className="text-gray-500 text-sm font-medium">Total Assets</h3>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">$24,500.00</p>
+                        <div className="mt-4 flex items-center text-green-600 text-sm">
+                            <span>+12.5%</span>
+                            <span className="text-gray-400 ml-2">vs last month</span>
+                        </div>
                     </div>
-                </main>
+                    <div className="glass-card p-6 rounded-3xl">
+                        <h3 className="text-gray-500 text-sm font-medium">Total Liabilities</h3>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">$1,200.00</p>
+                        <div className="mt-4 flex items-center text-red-600 text-sm">
+                            <span>+2.1%</span>
+                            <span className="text-gray-400 ml-2">vs last month</span>
+                        </div>
+                    </div>
+                    <div className="glass-card p-6 rounded-3xl">
+                        <h3 className="text-gray-500 text-sm font-medium">Net Worth</h3>
+                        <p className="text-3xl font-bold text-gray-900 mt-2">$23,300.00</p>
+                        <div className="mt-4 flex items-center text-green-600 text-sm">
+                            <span>+10.4%</span>
+                            <span className="text-gray-400 ml-2">vs last month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="glass-card rounded-3xl overflow-hidden">
+                    <div className="p-6 border-b border-gray-100">
+                        <h2 className="text-xl font-bold text-gray-900">Your Accounts</h2>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                            <thead className="bg-gray-50/50">
+                                <tr>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Currency</th>
+                                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Balance</th>
+                                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {loading ? (
+                                    <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">Loading accounts...</td></tr>
+                                ) : accounts.length === 0 ? (
+                                    <tr><td colSpan={5} className="px-6 py-8 text-center text-gray-500">No accounts found.</td></tr>
+                                ) : (
+                                    accounts.map((account) => (
+                                        <tr key={account.id} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="font-medium text-gray-900">{account.name}</div>
+                                                <div className="text-xs text-gray-400">{new Date(account.created_at).toLocaleDateString()}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${account.type === 'ASSET' ? 'bg-green-100 text-green-800' :
+                                                    account.type === 'LIABILITY' ? 'bg-red-100 text-red-800' :
+                                                        'bg-blue-100 text-blue-800'
+                                                    }`}>
+                                                    {account.type}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-gray-500">{account.currency}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap font-bold text-gray-900">
+                                                {(account.balance / 100).toFixed(2)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <div className="flex justify-end space-x-3">
+                                                    <button onClick={() => openTransactionModal(account.id, 'DEPOSIT')} className="text-brand-600 hover:text-brand-800">Deposit</button>
+                                                    <button onClick={() => openTransactionModal(account.id, 'WITHDRAW')} className="text-brand-600 hover:text-brand-800">Withdraw</button>
+                                                    <button onClick={() => openHistoryModal(account.id)} className="text-gray-400 hover:text-gray-600">History</button>
+                                                    <button onClick={() => openTransferModal(account.id)} className="text-brand-600 hover:text-brand-800">Transfer</button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
 
             {showCreateModal && (

@@ -109,6 +109,9 @@ A comprehensive module for defining the banking system's behavior:
   - `POST /products`: Create a new product.
   - `POST /accounts/product`: Assign a product to an account.
   - `POST /interest/calculate`: Trigger interest calculation.
+  - `GET /products`: List products.
+  - `PUT /products?id={id}`: Update a product.
+  - `POST /products/clone?id={id}`: Clone a product.
 
 - **Transactions & Payments**
   - `GET /transactions`: Get transaction history.
@@ -120,11 +123,34 @@ A comprehensive module for defining the banking system's behavior:
 - **Securities**
   - `GET /securities`: List securities.
   - `POST /securities`: Create a security.
+  - `GET /securities?symbol={symbol}`: Get security details.
   - `POST /securities/sync`: Sync market prices.
 
 - **Clients**
   - `GET /clients`: List clients.
   - `POST /clients`: Create a client.
+  - `GET /clients?id={id}`: Get client details.
+
+- **Fee Engine**
+  - `GET /fees`: List fees.
+  - `POST /fees`: Create a fee.
+  - `PUT /fees?id={id}`: Update a fee.
+  - `POST /fees/clone?id={id}`: Clone a fee.
+
+- **Rules Engine**
+  - `GET /rules`: List rules.
+  - `POST /rules`: Create a rule.
+  - `PUT /rules?id={id}`: Update a rule.
+  - `POST /rules/clone?id={id}`: Clone a rule.
+
+- **Batch Engine**
+  - `GET /batches`: List batch job history.
+  - `POST /batches?job={name}`: Trigger a batch job.
+
+- **Workflow Engine**
+  - `GET /workflows/approvals`: List pending approvals.
+  - `POST /workflows/approve?id={id}`: Approve a workflow.
+  - `POST /workflows/reject?id={id}`: Reject a workflow.
 
 ## Setup & Running
 

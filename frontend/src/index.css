@@ -1,11 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Outfit', sans-serif;
 }
 
 body {
-  @apply bg-gray-50 text-gray-900;
+  @apply bg-gray-50 text-gray-900 antialiased;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(96, 122, 248, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(129, 155, 251, 0.15) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-glass;
+  }
+
+  .glass-card {
+    @apply bg-white/60 backdrop-blur-lg border border-white/40 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .glass-input {
+    @apply bg-white/50 border-gray-200 focus:bg-white/80 focus:ring-brand-500 focus:border-brand-500 backdrop-blur-sm transition-all;
+  }
 }
